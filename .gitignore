@@ -1,0 +1,30 @@
+# Dependencias
+/node_modules
+
+# Variables de entorno
+.env
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Archivos de log
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Directorios de compilación/distribución
+/build
+/dist
+
+# Otros archivos generados o temporales
+.DS_Store # macOS
+/tmp
+/coverage
+.nyc_output/
+.eslintcache
+
+# Archivos específicos de Prisma
+/prisma/migrations # Si no quieres versionar las migraciones (a veces es útil versionarlas, depende del equipo)
+/generated/prisma # Ya lo tienes, pero lo incluyo para completitud

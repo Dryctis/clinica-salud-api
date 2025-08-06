@@ -1,0 +1,90 @@
+// server/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  // NO DEBE HABER NINGUNA LÍNEA 'output' AQUÍ para que @prisma/client funcione correctamente
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Modelos de la Base de Datos para Clínica de Salud y Bienestar ---
+
+// Modelo para el personal de la clínica y pacientes externos
+model User {
+  id               String       @id @default(uuid())
+  email            String       @unique
+  password         String       // Contraseña hasheada (NUNCA en texto plano)
+  firstName        String
+  lastName         String
+  phone            String?
+  address          String?
+  // Rol del usuario: 'admin', 'doctor', 'receptionist'
+  role             String       @default("receptionist")
+  specialty        String?      // Solo para rol 'doctor' (ej: "Dermatología", "Nutrición")
+  isActive         Boolean      @default(true) // Si la cuenta está activa
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  // Relaciones
+  // Si es un doctor, tiene citas que le han sido asignadas
+  assignedAppointments Appointment[] @relation("DoctorAppointments")
+  // Ya no hay citas reservadas por User, ahora se usan los pacientes
+}
+
+// Modelo para los servicios que ofrece la clínica
+model Service {
+  id          String       @id @default(uuid())
+  name        String       @unique // Ej: "Consulta General", "Masaje Terapéutico"
+  description String?      @db.Text
+  duration    Int          // Duración estimada del servicio en minutos
+  price       Float
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  appointments Appointment[] // Un servicio puede estar en muchas citas
+}
+
+// Modelo para los pacientes
+model Patient {
+  id               String       @id @default(uuid())
+  primerNombre     String
+  apellido         String
+  fechaNacimiento  DateTime?
+  genero           String?
+  telefono         String?
+  direccion        String?
+  historialMedico  String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  // Relación: Un paciente puede tener muchas citas
+  bookedAppointments Appointment[] @relation("PatientAppointments")
+}
+
+// Modelo para las citas
+model Appointment {
+  id          String       @id @default(uuid())
+  // ID del paciente que reserva la cita
+  patientId   String
+  // ¡CORRECCIÓN! Ahora la cita se relaciona con el modelo Patient
+  patient     Patient      @relation("PatientAppointments", fields: [patientId], references: [id])
+  // ID del doctor asignado a la cita
+  doctorId    String?      // Opcional al crear, se asigna después. Es el ID del User con role 'doctor'
+  doctor      User?        @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  // ID del servicio que se va a realizar
+  serviceId   String
+  service     Service      @relation(fields: [serviceId], references: [id])
+  // Detalles de la cita
+  startTime   DateTime     // Fecha y hora de inicio de la cita
+  endTime     DateTime     // Fecha y hora de fin de la cita (calculado en backend)
+  status      String       @default("pending") // "pending", "confirmed", "completed", "cancelled"
+  notes       String?      @db.Text // Notas adicionales para la cita
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([doctorId, startTime]) // Un doctor no puede tener dos citas a la misma hora
+}
