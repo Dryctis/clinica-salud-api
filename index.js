@@ -14,7 +14,13 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// ¡Aquí está el cambio para CORS!
+app.use(cors({
+    origin: 'https://clinica-salud-frontend.vercel.app', // <-- ¡Esta es la URL específica de tu frontend!
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos HTTP permitidos
+    allowedHeaders: ['Content-Type', 'Authorization'] // Cabeceras permitidas
+}));
+
 app.use(express.json());
 
 // Conexión de las rutas al servidor
