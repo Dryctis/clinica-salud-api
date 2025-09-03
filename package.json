@@ -1,13 +1,14 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "main": "index.js",
   "type": "module",
+  "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js",
+    "postinstall": "prisma generate",
     "start": "node index.js",
     "start:migrate": "prisma migrate deploy && node index.js",
-    "postinstall": "prisma generate"
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@prisma/client": "^6.13.0",
